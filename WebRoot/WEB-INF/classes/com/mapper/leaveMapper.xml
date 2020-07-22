@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.leaveDao">
+
+	<resultMap type="Leave" id="Leaveresult">
+		<id property="id" column="ID"/>
+		<result property="empSN" column="EMPLOYEE_SN"/>
+		<result property="startTime" column="STARTTIME"/>
+		<result property="endTime" column="ENDTIME"/>
+		<result property="leaveDay" column="LEAVEDAY"/>
+		<result property="leaveType" column="LEAVETYPE"/>
+		<result property="reason" column="REASON"/>
+		<result property="nextDealSn" column="NEXT_DEAL_SN"/>
+		<result property="apprcveOpinion" column="APPROVE_OPINION"/>
+		<result property="status" column="STATUS"/>
+		<collection property="employee" column="sn" javaType="Employee">
+			<id property="sn" column="SN"/>
+			<result property="positionId" column="positionID"/>
+			<result property="departmentId" column="departmentID"/>
+			<result property="name" column="NAME"/>
+			<result property="password" column="PASSWORD"/>
+			<result property="status" column="STATUS"/>
+		</collection>
+		<collection property="leaveItem" column="leaveId" javaType="LeaveItem">
+			<id property="Id" column="ID"/>
+			<result property="leaveId" column="LeaveID"/>
+			<result property="leaveName" column="LeaveName"/>
+			<result property="creatTime" column="CreatTime"/>
+			<result property="auditTime" column="AuditTime"/>
+			<result property="auditOpinion" column="AuditOpinion"/>
+		</collection>
+		
+	</resultMap>
+	
+	<select id="findleave" parameterType="map" resultMap="Leaveresult">
+		SELECT l.ID,e.`NAME`,l.LEAVEDAY,t.LeaveName EMPLOYEE_SN,t.CreatTime STARTTIME,t.AuditTime ENDTIME,t.AuditOpinion REASON,l.`STATUS` 
+		from `leave` l 
+		LEFT JOIN employee e ON l.EMPLOYEE_SN=e.SN 
+		LEFT JOIN leaveitem t ON l.ID=t.LeaveID
+		LIMIT #{page},#{rows}
+	</select>
+	<select id="count" resultType="int">
+	SELECT COUNT(*) FROM claimvoucher
+	</select>
+
+	
+	<insert id="addLeave" parameterType="Leave" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `leave`(EMPLOYEE_SN,STARTTIME,ENDTIME,LEAVEDAY,LEAVETYPE,REASON,NEXT_DEAL_SN,APPROVE_OPINION,STATUS) 
+		VALUES (#{empSN},#{startTime},#{endTime},#{leaveDay},#{leaveType},#{reason},#{nextDealSn},#{apprcveOpinion},#{status})
+	</insert>
+	
+	<insert id="addLeaveitem" parameterType="LeaveItem">
+		INSERT INTO leaveitem(LeaveID,LeaveName,CreatTime,AuditTime,AuditOpinion) 
+		VALUES (#{leaveId},#{leaveName},#{creatTime},#{auditTime},#{auditOpinion})
+	</insert>
+	
+	<select id="findLeDetail" parameterType="Leave" resultMap="Leaveresult">
+		SELECT e.`NAME` name,d.`NAME` password,l.STARTTIME,l.ENDTIME,l.LEAVEDAY,l.LEAVETYPE,l.REASON,l.`STATUS` FROM `leave` l 
+			LEFT JOIN employee e ON e.SN=l.EMPLOYEE_SN
+			LEFT JOIN department d ON d.ID=e.departmentID  
+		where l.id=#{id}
+	</select>
+	
+ </mapper>

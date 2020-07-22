@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.bxDao">
+
+	<resultMap type="Cvoucher" id="bxresult"> 
+		<id property="id" column="ID"/>
+		<result property="nextDealSn" column="nextName"/>
+		<result property="createSn" column="createName"/>
+		<result property="createTime" column="createTIME"/>
+		<result property="modifyTime" column="modifyTIME"/>
+		<result property="event" column="EVENT"/>
+		<result property="totalAccount" column="totalACCOUNT"/>
+		<result property="status" column="STATUS"/>
+		<result property="poName" column="poNAME"/>
+		<result property="department" column="Department"/>
+		<collection property="employee" column="createSn"  javaType="Employee">
+			<id property="sn" column="SN"/>
+			<result property="positionId" column="positionID"/>
+			<result property="departmentId" column="departmentID"/>
+			<result property="name" column="NAME"/>
+			<result property="password" column="positionName"/>
+			<result property="status" column="STATUS"/>
+			<collection property="position" column="id" javaType="Position">
+			<id property="id" column="ID"/>
+			<result property="nameCn" column="nameCN"/>
+			<result property="nameEn" column="nameEN"/>
+			</collection>
+			<collection property="department" column="id" javaType="Department">
+			<id property="id" column="ID"/>
+			<result property="name" column="NAME"/>
+			</collection>
+		</collection>
+		<collection property="cresult" column="id"  javaType="Cresult">
+			<id property="id" column="ID"/>
+			<result property="clatmID" column="claimID"/>
+			<result property="checkTime" column="checkTIME"/>
+			<result property="checnSn" column="checkerSN"/>
+			<result property="result" column="RESULT"/>
+		</collection>
+	</resultMap>
+	<resultMap type="CVdetail" id="detailresult">
+			<id property="id" column="ID"/>
+			<result property="mainID" column="mainID"/>
+			<result property="item" column="ITEM"/>
+			<result property="account" column="ACCOUNT"/>
+			<result property="des" column="DES"/>
+			
+	</resultMap>
+	
+	<select id="findbx" parameterType="map" resultMap="bxresult">
+		SELECT c.ID,c.createTIME,c.createSN,e.`NAME` createName,c.totalACCOUNT,c.nextDealSN,p.`NAME` nextName,c.STATUS FROM claimvoucher c 
+			LEFT JOIN employee e ON c.createSN=e.SN 
+			LEFT JOIN employee p ON c.nextDealSN=p.SN
+			<where>
+				<if test="createSN!=null">AND c.createSN=#{createSN}</if>
+				<if test="department!=null">AND c.Department=#{department}</if>
+				<if test="status!=null">AND c.STATUS=#{status}</if>
+				<if test="createTime!=null and createTime1!=null">AND c.createTIME BETWEEN #{createTime} AND #{createTime1} </if>
+			</where>
+			LIMIT #{page},#{rows}
+	</select>
+	
+	<select id="count" resultType="int">
+	SELECT COUNT(*) FROM claimvoucher
+	</select>
+	
+	<select id="findDetails" parameterType="Cvoucher" resultMap="bxresult">
+		SELECT c.ID,c.createSN,e.`NAME` createName,d.`NAME`,po.nameCN positionName,c.createTIME,c.totalACCOUNT,c.nextDealSN,p.`NAME` nextName,c.STATUS,r.checkerSN,k.`NAME` EVENT,ps.nameCN poNAME,r.checkTIME,r.RESULT FROM claimvoucher c 
+			LEFT JOIN employee e ON c.createSN=e.SN 
+			LEFT JOIN position po ON e.positionID=po.ID
+			LEFT JOIN department d ON e.departmentID=d.ID
+			LEFT JOIN employee p ON c.nextDealSN=p.SN
+			LEFT JOIN checkresult r on r.claimID=c.ID
+			LEFT JOIN employee k on r.checkerSN = k.SN
+			LEFT JOIN position ps on ps.ID=k.positionID
+		WHERE c.ID=#{id}
+	</select>
+	
+	<select id="finditem" parameterType="int" resultMap="detailresult">
+		SELECT * FROM cvdetall d WHERE d.mainID=#{id}
+	</select>
+	
+	<update id="updatebx" parameterType="Cvoucher">
+		UPDATE claimvoucher c SET c.totalACCOUNT = #{totalAccount},c.modifyTIME=#{modifyTime} WHERE c.ID=#{id}
+	</update>
+	<insert id="addbx" parameterType="Cvoucher" useGeneratedKeys="true" keyProperty="id">
+			INSERT INTO claimvoucher(nextDealSN,createSN,createTIME,EVENT,totalACCOUNT,STATUS,Department) VALUES (#{nextDealSn},#{createSn},#{createTime},#{event},#{totalAccount},#{status},#{department})
+	</insert>
+	<select id="findDm" parameterType="String" resultType="int">
+		SELECT e.SN FROM employee e WHERE e.positionID=2 AND e.departmentID=(SELECT d.ID FROM department d WHERE d.`NAME`=#{department})
+	
+	</select>
+	<insert id="addDetail" parameterType="CVdetail">
+		INSERT INTO cvdetall(mainID,ITEM,ACCOUNT,DES) VALUES (#{mainID},#{item},#{account},#{des})
+	</insert>
+	
+	<delete id="delitem" parameterType="int">
+		DELETE FROM cvdetall WHERE mainID=#{id}
+	</delete>
+	
+	<update id="updateStatus" parameterType="Cvoucher">
+		UPDATE claimvoucher c SET c.`STATUS`=#{status}
+		<if test="nextDealSn!=null">,c.nextDealSN=#{nextDealSn}</if>
+		 WHERE c.ID=#{id}
+	</update>
+	
+
+</mapper>

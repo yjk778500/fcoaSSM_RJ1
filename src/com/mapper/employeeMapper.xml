@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.employeeDao">
+
+	<resultMap type="Employee" id="empresult"> 
+		<id property="sn" column="SN"/>
+		<result property="positionId" column="positionID"/>
+		<result property="departmentId" column="departmentID"/>
+		<result property="name" column="NAME"/>
+		<result property="password" column="PASSWORD"/>
+		<result property="status" column="STATUS"/>
+		<collection property="position" column="id" javaType="Position">
+			<id property="id" column="ID"/>
+			<result property="nameCn" column="nameCN"/>
+			<result property="nameEn" column="nameEN"/>
+		</collection>
+		<collection property="department" column="id" javaType="Department">
+			<id property="id" column="ID"/>
+			<result property="name" column="NAME"/>
+		</collection>
+		
+	</resultMap>
+	
+	<select id="findemp" parameterType="Employee" resultMap="empresult">
+		select  e.SN,e.positionID,e.`NAME`,e.`PASSWORD`,e.`STATUS`,p.nameCN,d.NAME nameEN  from employee e,position p,department d WHERE e.positionID = p.ID and e.departmentID=d.ID
+		<if test="sn!=null">AND SN=#{sn}</if>
+		<!-- <if test="name!=null">AND `NAME`=#{name}</if> -->
+		<if test="password!=null">AND `PASSWORD` =#{password}</if>
+	</select>
+	
+	
+	<insert id="addemp" parameterType="Employee" useGeneratedKeys="true" keyProperty="sn">
+	
+		INSERT INTO employee(positionID,departmentID,NAME,PASSWORD,STATUS) 
+		VALUES (#{positionId},#{departmentId},#{name},#{password},#{status})
+	</insert>
+
+</mapper>

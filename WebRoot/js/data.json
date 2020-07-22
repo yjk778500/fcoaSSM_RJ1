@@ -1,0 +1,17 @@
+[{
+	"children":[{
+			"id":111,
+			"text":"商品列表",
+			"attributes":{
+				"url":"goods.jsp"
+			},
+			"iconCls":"icon-add"
+		},{
+			"id":112,
+			"text":"查询订单",
+			"attributes":{
+				"url":"order.jsp"
+			},
+			"iconCls":"icon-search"
+		}]
+}]
